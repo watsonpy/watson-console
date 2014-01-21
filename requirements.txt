@@ -1,0 +1,8 @@
+# Unit Test
+pytest
+pytest-cov
+coverage
+coveralls
+
+# Watson
+watson-common >= 1.0.0
