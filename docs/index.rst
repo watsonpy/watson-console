@@ -24,6 +24,11 @@ Build Status
 
 |Pypi|
 
+Installation
+------------
+
+``pip install watson-console``
+
 Testing
 -------
 
