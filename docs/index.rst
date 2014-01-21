@@ -14,15 +14,7 @@ Create console commands with ease.
 Build Status
 ------------
 
-+-----------+------------------+---------------------+
-| Branch    | Status           | Coverage            |
-+===========+==================+=====================+
-| Master    | |Build StatusM|  | |Coverage Status|   |
-+-----------+------------------+---------------------+
-| Develop   | |Build StatusD|  |                     |
-+-----------+------------------+---------------------+
-
-|Pypi|
+|Build Status| |Coverage Status| |Version| |Downloads| |Licence|
 
 Installation
 ------------
@@ -46,11 +38,13 @@ Table of Contents
 
 .. include:: toc.rst.inc
 
+.. |Build Status| image:: https://api.travis-ci.org/Bespohk/watson-console.png?branch=master
+   :target: https://travis-ci.org/Bespohk/watson-console
 .. |Coverage Status| image:: https://coveralls.io/repos/bespohk/watson-console/badge.png
    :target: https://coveralls.io/r/bespohk/watson-console
-.. |Build StatusD| image:: https://api.travis-ci.org/bespohk/watson-console.png?branch=develop
-   :target: https://travis-ci.org/bespohk/watson-console
-.. |Build StatusM| image:: https://api.travis-ci.org/bespohk/watson-console.png?branch=master
-   :target: https://travis-ci.org/bespohk/watson-console
-.. |Pypi| image:: https://pypip.in/v/watson-console/badge.png
-   :target: https://crate.io/packages/watson-console/
+.. |Version| image:: https://pypip.in/v/watson-console/badge.png
+   :target: https://pypi.python.org/pypi/watson-console/
+.. |Downloads| image:: https://pypip.in/d/watson-console/badge.png
+   :target: https://pypi.python.org/pypi/watson-console/
+.. |Licence| image:: https://pypip.in/license/watson-console/badge.png
+   :target: https://pypi.python.org/pypi/watson-console/
