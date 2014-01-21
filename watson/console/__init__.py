@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
-from watson.console.runner import Runner, ConsoleError
-
 __version__ = '1.0.0'
-__all__ = ['Runner', 'ConsoleError']
+
+try:
+    # Fix for setup.py version import
+    from watson.console.runner import Runner, ConsoleError
+
+    __all__ = ['Runner', 'ConsoleError']
+except:
+    pass
