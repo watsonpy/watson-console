@@ -64,7 +64,7 @@ with open(os.path.join(path, 'requirements.txt')) as f:
 setup(
     name='watson-console',
     version=watson.console.__version__,
-    url='http://github.com/bespohk/watson-console',
+    url='http://github.com/watsonpy/watson-console',
     description='Create console commands with ease.',
     long_description=readme,
 
