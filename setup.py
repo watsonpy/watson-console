@@ -26,8 +26,8 @@ class PyPiPublish(BaseCommand):
     """Publishes the code to PyPi.
     """
     def run(self):
+        os.system('py.test')
         if (confirm('Are you sure you want to push to PyPi?')):
-            os.system('py.test')
             os.system('python setup.py sdist upload')
             clean()
 

@@ -1,2 +1,2 @@
 sphinxcontrib-napoleon
-watson-common >= 1.0.0
+watson-common == 1.0.2
