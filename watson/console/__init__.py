@@ -6,5 +6,5 @@ try:
     from watson.console.runner import Runner, ConsoleError
 
     __all__ = ['Runner', 'ConsoleError']
-except:
-    pass
+except:  # pragma: no cover
+    pass  # pragma: no cover
