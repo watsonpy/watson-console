@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import abc
-from watson.common.contextmanagers import ignored
+from watson.common.contextmanagers import suppress
 
 
 class Base(metaclass=abc.ABCMeta):
@@ -79,7 +79,7 @@ def find_commands_in_module(module):
     commands = []
     for key in dir(module):
         item = getattr(module, key)
-        with ignored(Exception):
+        with suppress(Exception):
             if issubclass(item, Base) and item != Base:
                 commands.append(item)
     return commands

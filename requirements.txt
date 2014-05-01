@@ -1,1 +1,1 @@
-watson-common >= 1.1.0
+watson-common >= 1.1.2
