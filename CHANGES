@@ -1,3 +1,7 @@
+2.0.1
+
+- Show help if namespace doesn't exist
+
 2.0.0
 
 - BC: Commands defined in a new way, see Usage docs
