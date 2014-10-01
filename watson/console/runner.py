@@ -147,7 +147,7 @@ class Runner(object):
                     description=command_help,
                     help=command_help)
         self.update_usage(parser, namespace)
-        if not namespace:
+        if not namespace or namespace not in namespaces:
             # Override the default output from argparse to display all the
             # namespaces and their commands.
             parser.print_usage()
