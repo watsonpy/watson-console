@@ -14,12 +14,11 @@ class TestConsoleError(object):
 class TestRunner:
 
     def test_create(self):
-        runner = Runner(['test.py'], commands=[
+        runner = Runner(commands=[
             'tests.watson.console.support.SampleStringCommand',
             SampleNonStringCommand
         ])
         assert len(runner.commands) == 2
-        assert runner.name == 'test.py'
 
     def test_add_commands(self):
         runner = Runner()
@@ -31,79 +30,80 @@ class TestRunner:
         assert not runner.get_command('test')
 
     def test_no_execute(self):
-        with raises(TypeError):
-            runner = Runner(['test.py', 'nohelpnoexecute'], commands=[
+        with raises(SystemExit):
+            runner = Runner(commands=[
                 'tests.watson.console.support.SampleNoHelpNoExecuteCommand'
             ])
-            runner.execute()
+            runner.execute(['test.py', 'nohelpnoexecute', 'execute'])
 
     def test_execute_usage(self):
-        runner = Runner(['test.py'], commands=[
+        runner = Runner(commands=[
             'tests.watson.console.support.SampleStringCommand',
             SampleNonStringCommand
         ])
-        output = runner.execute()  # will print to screen in tests
-        assert not output
+        with raises(SystemExit):
+            runner.execute(['test.py'])  # will print to screen in tests
 
     def test_execute_command_usage(self):
-        runner = Runner(['test.py', 'nonstring', '-h'], commands=[
+        runner = Runner(commands=[
             'tests.watson.console.support.SampleStringCommand',
             SampleNonStringCommand
         ])
-        output = runner.execute()  # will print to screen in tests
-        assert not output
+        with raises(SystemExit):
+            runner.execute(['test.py', 'nonstring', 'execute', '-h'])  # will print to screen in tests
 
     def test_execute_command_usage_with_args(self):
-        runner = Runner(['test.py', 'runargs', '-h'], commands=[
+        runner = Runner(commands=[
             'tests.watson.console.support.SampleArgumentsCommand'
         ])
-        output = runner.execute()  # will print to screen in tests
-        assert not output
+        with raises(SystemExit):
+            runner.execute(['test.py', 'runargs', 'execute', '-h'])  # will print to screen in tests
 
     def test_execute_command_usage_with_options(self):
-        runner = Runner(['test.py', 'runoptions', '-h'], commands=[
+        runner = Runner(commands=[
             'tests.watson.console.support.SampleOptionsCommand'
         ])
-        output = runner.execute()  # will print to screen in tests
-        assert not output
+        with raises(SystemExit):
+            runner.execute(['test.py', 'runoptions', 'execute', '-h'])  # will print to screen in tests
 
     def test_execute_command_with_options_invalid(self):
-        runner = Runner(['test.py', 'runoptions', '-d'], commands=[
+        runner = Runner(commands=[
             'tests.watson.console.support.SampleOptionsCommand'
         ])
-        output = runner.execute()  # will print to screen in tests
-        assert not output
+        with raises(SystemExit):
+            runner.execute(['test.py', 'runoptions', 'execute', '-d'])  # will print to screen in tests
 
     def test_execute_command_with_error(self):
-        runner = Runner(['test.py', 'string'], commands=[
+        runner = Runner(commands=[
             'tests.watson.console.support.SampleStringCommand'
         ])
-        runner()
+        with raises(SystemExit):
+            runner(['test.py', 'string', 'execute'])
 
     def test_execute_command(self):
-        runner = Runner(['test.py', 'nonstring'], commands=[
+        runner = Runner(commands=[
             'tests.watson.console.support.SampleNonStringCommand'
         ])
-        assert runner()
+        assert runner(['test.py', 'nonstring', 'execute'])
 
     def test_execute_command_with_options(self):
-        runner = Runner(['test.py', 'runoptions', '-f', 'test'], commands=[
+        runner = Runner(commands=[
             'tests.watson.console.support.SampleOptionsCommand'
         ])
-        output = runner.execute()  # will print to screen in tests
+        output = runner.execute(['test.py', 'runoptions', 'execute', '--filename', 'test'])  # will print to screen in tests
         assert output
 
     def test_execute_command_with_args(self):
-        runner = Runner(['test.py', 'runargs', 'test', 'test2'], commands=[
+        runner = Runner(commands=[
             'tests.watson.console.support.SampleArgumentsCommand'
         ])
-        output = runner.execute()  # will print to screen in tests
+        output = runner.execute(['test.py', 'runargs', 'execute', 'test', 'test2'])  # will print to screen in tests
         assert output
 
     def test_execute_command_with_args_options(self):
-        runner = Runner(['test.py', 'runargsoptions', 'test', '-f', 'filename.txt'], commands=[
+        runner = Runner(commands=[
             'tests.watson.console.support.SampleArgumentsCommand',
             'tests.watson.console.support.SampleArgumentsWithOptionsCommand'
         ])
-        output = runner.execute()  # will print to screen in tests
+        output = runner.execute(['test.py', 'runargsoptions', 'execute', 'arg1', 'arg2', '--filename', 'filename.txt'])  # will print to screen in tests
         assert output

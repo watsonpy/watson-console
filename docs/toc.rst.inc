@@ -3,4 +3,5 @@
    :includehidden:
 
 
+   usage
    reference-library/index

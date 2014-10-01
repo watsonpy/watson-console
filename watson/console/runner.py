@@ -2,13 +2,17 @@
 import argparse
 from collections import OrderedDict
 import os
+import re
 import sys
 from watson.common.imports import load_definition_from_string
+from watson.common.contextmanagers import suppress
 from watson.console import colors, styles
 
 
-class Runner(object):
+USAGE_REGEX = re.compile('(\w+[\:])(.+?(?=\[))(.*)')
 
+
+class Runner(object):
     """A command line runner that allows new commands to be added and run on
     demand.
 
@@ -21,13 +25,10 @@ class Runner(object):
         runner = Runner(commands=['module.commands.ACommand'])
         runner()
     """
-    _argv = None
     _name = None
     _commands = None
 
-    def __init__(self, argv=None, commands=None):
-        self._argv = argv or sys.argv[:]
-        self._name = os.path.basename(self._argv.pop(0))
+    def __init__(self, commands=None):
         self._commands = []
         if commands:
             self.add_commands(commands)
@@ -49,7 +50,7 @@ class Runner(object):
         for command in self._commands:
             if isinstance(command, str):
                 command = load_definition_from_string(command)
-            commands[command.name] = command
+            commands[command.cased_name()] = command
         return OrderedDict(sorted(commands.items()))
 
     def add_command(self, command):
@@ -70,109 +71,154 @@ class Runner(object):
         for command in commands:
             self.add_command(command)
 
-    @property
-    def usage(self):
-        """Returns the usage text.
-
-        This is used when the -h or --help command is invoked.
-        """
-        help = colors.header("""{name} [command], or append -h (--help) for additional help.
-        """)
-        return help.format(name=self.name)
-
-    @property
-    def available_commands_usage(self):
-        """Returns the usage text for all commands.
-
-        This is used when no commands have been specified.
-        """
-        help = '\n'.join([
-            '{usage}',
-            '',
-            'Commands:\n    {commands}',
-            ''
-        ])
-        commands = []
-        for name, command in self.commands.items():
-            commands.append('{0}: {1}'.format(styles.bold(name), command.help))
-
-        return help.format(commands="\n    ".join(commands),
-                           usage=self.usage)
-
-    def get_command_usage(self, command):
-        """Returns the usage string for an individual command.
-        """
-        usage = []
-        for arguments in command.arguments:
-            if isinstance(arguments, tuple):
-                usage.append(''.join(('[', arguments[0][0], ' VALUE]')))
-            else:
-                usage.append(arguments.get('name', arguments.get('dest')))
-        return colors.header(' '.join((command.name, ' '.join(usage))))
-
     def get_command(self, command_name):
         """Returns an initialized command from the attached commands.
+
+        Args:
+            command_name: The command name to retrieve
         """
         if command_name not in self.commands:
             return None
         return self.commands[command_name]()
 
-    def execute(self):
-        """Executes the specified command.
-        """
-        parser = ArgumentParser(add_help=False)
-        help_args = ('-h', '--help')
-        help = False
-        command = None
-        try:
-            for help_arg in help_args:
-                if help_arg in self._argv:
-                    help = self._argv.pop(self._argv.index(help_arg))
-            if self._argv:
-                command = self.get_command(self._argv.pop(0))
-                if command:
-                    parser.add_arguments(command.arguments)
-                    parser.description = command.help
-                    parser.usage = self.get_command_usage(command)
-        except:
-            raise
-        if not command:
-            parser.usage = self.available_commands_usage
-            help = True
-        if help:
-            parser.print_help()
-        if command and not help:
-            try:
-                command.parsed_args = parser.parse_args(self._argv)
-                return command()
-            except ConsoleError as exc:
-                sys.stderr.write(
-                    colors.fail('Error: {0}\n'.format(str(exc).strip("'"))))
+    def update_usage(self, parser, namespace, is_subparser=False):
+        """Updates the usage for the relevant parser.
 
-    def __call__(self):
-        return self.execute()
+        Forces the usage message to include the namespace and color.
+        """
+        usage = parser.format_usage()
+        r = USAGE_REGEX.search(usage)
+        if not r:
+            return
+        parts = [s for s in r.groups()]
+        if namespace:
+            if is_subparser:
+                method_part = parts[1].split(' ')
+                method_part.insert(-2, namespace)
+                parts[1] = ' '.join(method_part)
+            else:
+                parts.insert(2, '{} '.format(namespace))
+        parser.usage = colors.header(''.join(parts[1:]).strip())
+
+    def attach_commands(self, parser, namespace):
+        """Register the commands against the parser.
+
+        Args:
+            parser: The parser to add commands to
+            namespace: The namespace the commands should sit within
+        """
+        subparsers = parser.add_subparsers()
+        namespaces = {}
+        for command_class in self.commands:
+            command_class = self.get_command(command_class)
+            command_namespace = command_class.cased_name()
+            if command_namespace not in namespaces:
+                namespaces[command_namespace] = []
+            command_help = command_class.help()
+            # if namespace in self.commands:
+            methods = [cmethod for cmethod in dir(command_class)
+                       if hasattr(getattr(command_class, cmethod), 'is_cli_command')]
+            for a_command in methods:
+                command = getattr(command_class, a_command)
+                namespaces[command_namespace].append((a_command, command.__func_doc__))
+                if command_namespace == namespace:
+                    subparser = subparsers.add_parser(
+                        a_command,
+                        help=command.__func_doc__,
+                        description=command.__desc__)
+                    for arg, kwargs in command.__args__:
+                        subparser.add_argument(arg, **kwargs)
+                    subparser.set_defaults(
+                        command=(
+                            command_class,
+                            a_command,
+                            command.__args_mapping__))
+                    self.update_usage(
+                        subparser, namespace, is_subparser=True)
+            if command_namespace == namespace:
+                # when viewing a command
+                parser.description = command_help
+                self.update_usage(parser, namespace)
+                return
+            if not namespace:
+                # when viewing the namespaces
+                subparsers.add_parser(
+                    command_namespace,
+                    description=command_help,
+                    help=command_help)
+        self.update_usage(parser, namespace)
+        if not namespace:
+            # Override the default output from argparse to display all the
+            # namespaces and their commands.
+            parser.print_usage()
+            self.write()
+            longest_namespace = max(namespaces, key=len)
+            length = len(longest_namespace)
+            for namespace in sorted(namespaces):
+                commands = namespaces[namespace]
+                self.write(colors.fail(styles.bold(namespace.ljust(length))))
+                longest_command = max([command[0] for command in commands], key=len)
+                longest_command_length = len(longest_command)
+                for command, help in sorted(commands):
+                    command = styles.bold(command.ljust(longest_command_length))
+                    self.write('    {}\t{}'.format(command, help))
+                self.write()
+            sys.exit(0)
+
+    def write(self, message=''):
+        sys.stdout.write(message + '\n')
+
+    def execute(self, args):
+        """Execute the runner and any commands the user has specified.
+        """
+        if not args:
+            args = sys.argv[:]
+        self._name = os.path.basename(args.pop(0))
+        execute = True
+        help = '-h'
+        method = help
+        namespace = None
+        # Always show help if invalid command
+        try:
+            namespace, method, *_ = args
+        except:
+            with suppress(Exception):
+                namespace = args[0]
+            execute = False
+            args.append(method)
+        if namespace:
+            args = args[1:]
+        if namespace == help:
+            namespace = None
+
+        # Add the relevant commands
+        parser = argparse.ArgumentParser()
+        try:
+            self.attach_commands(parser, namespace)
+        except ConsoleError as exc:
+            self._handle_exc(exc)
+
+        # Parse the input
+        parsed_args = parser.parse_args(args)
+        if execute:
+            instance, method, args = parsed_args.command
+            try:
+                kwargs = {arg_name: getattr(parsed_args, arg_name)
+                          for attr, arg_name in args.items()}
+                return getattr(instance, method)(**kwargs)
+            except ConsoleError as exc:
+                self._handle_exc(exc)
+
+    def _handle_exc(self, exc):
+        exc_msg = str(exc).strip("'")
+        sys.stderr.write(colors.fail('Error: {0}\n'.format(exc_msg)))
+        sys.exit(1)
+
+    def __call__(self, args=None):
+        # Convenience to execute()
+        return self.execute(args)
 
 
 class ConsoleError(KeyError):
-
     """An error that should be raised from within the command.
     """
-    pass
-
-
-class ArgumentParser(argparse.ArgumentParser):
-
-    def parse_known_args(self, args=None, namespace=None):
-        args, argv = super(
-            ArgumentParser, self).parse_known_args(args, namespace)
-        return args, []
-
-    def add_arguments(self, arguments_list):
-        for arguments in arguments_list:
-            if isinstance(arguments, tuple):
-                args, arguments = arguments
-            else:
-                args = []
-                if 'required' not in arguments:
-                    arguments['nargs'] = '?'
-            self.add_argument(*args, **arguments)
