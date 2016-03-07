@@ -23,9 +23,9 @@ Dependencies
    :target: https://travis-ci.org/watsonpy/watson-console
 .. |Coverage Status| image:: https://coveralls.io/repos/watsonpy/watson-console/badge.png
    :target: https://coveralls.io/r/watsonpy/watson-console
-.. |Version| image:: https://pypip.in/v/watson-console/badge.png
+.. |Version| image:: http://badge.kloud51.com/pypi/v/watson-console.png
    :target: https://pypi.python.org/pypi/watson-console/
-.. |Downloads| image:: https://pypip.in/d/watson-console/badge.png
+.. |Downloads| image:: http://badge.kloud51.com/pypi/d/watson-console.png
    :target: https://pypi.python.org/pypi/watson-console/
-.. |Licence| image:: https://pypip.in/license/watson-console/badge.png
+.. |Licence| image:: http://badge.kloud51.com/pypi/license/watson-console.png
    :target: https://pypi.python.org/pypi/watson-console/
