@@ -47,9 +47,10 @@ class arg(object):
 
     def __init__(self, name=None, **kwargs):
         self.name = name
-        if 'optional' in kwargs:
+        optional_key = 'optional'
+        if optional_key in kwargs:
             self.optional = True
-            del kwargs['optional']
+            del kwargs[optional_key]
         self.kwargs = kwargs
         self.validate_name(name)
 

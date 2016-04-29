@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import abc
+import inspect
 import sys
 from watson.common import strings
 from watson.common.contextmanagers import suppress
@@ -83,9 +84,7 @@ def find_commands_in_module(module):
         A list of commands from the module.
     """
     commands = []
-    for key in dir(module):
-        item = getattr(module, key)
-        with suppress(Exception):
-            if issubclass(item, Base) and item != Base:
-                commands.append(item)
+    for name, item in inspect.getmembers(module):
+        if inspect.isclass(item) and issubclass(item, Base) and item != Base:
+            commands.append(item)
     return commands
