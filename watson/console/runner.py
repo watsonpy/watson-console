@@ -9,7 +9,7 @@ from watson.common.contextmanagers import suppress
 from watson.console import colors, styles
 
 
-USAGE_REGEX = re.compile('(\w+[\:])(.+?(?=\[))(.*)')
+USAGE_REGEX = re.compile(r'(\w+[\:])(.+?(?=\[))(.*)')
 
 
 class Runner(object):
@@ -181,7 +181,7 @@ class Runner(object):
         # Always show help if invalid command
         try:
             namespace, method, *_ = args
-        except:
+        except Exception:
             with suppress(Exception):
                 namespace = args[0]
             execute = False

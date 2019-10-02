@@ -3,7 +3,6 @@ import abc
 import inspect
 import sys
 from watson.common import strings
-from watson.common.contextmanagers import suppress
 
 
 class Base(metaclass=abc.ABCMeta):

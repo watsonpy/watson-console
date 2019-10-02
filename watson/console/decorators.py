@@ -6,7 +6,7 @@ from watson.common.contextmanagers import suppress
 
 __all__ = ['arg', 'cmd']
 
-DOC_REGEX = re.compile('(?P<arg>\w+)(|.)+[\:]\ (?P<help>.*)', re.MULTILINE)
+DOC_REGEX = re.compile(r'(?P<arg>\w+)(|.)+[\:]\ (?P<help>.*)', re.MULTILINE)
 
 
 def _ensure_func_attrs(func):
