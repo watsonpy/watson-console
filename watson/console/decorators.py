@@ -58,7 +58,7 @@ class arg(object):
         index = None
         try:
             index = [arg[0] for arg in func.__args__].index(prefixed_name)
-        except:
+        except Exception:
             with suppress(Exception):
                 idx = [arg[0] for arg in func.__args__].index(name)
                 del func.__args__[idx]
@@ -100,7 +100,7 @@ class arg(object):
         if not hasattr(func, 'is_cli_command'):
             # Add any named arguments, we'll override them later if the
             # arg has been specified in a decorator
-            spec = inspect.getargspec(func)
+            spec = inspect.getfullargspec(func)
             for arg in spec[0][1:]:
                 func.__args_mapping__[arg] = arg
                 func.__args__.append((arg, {'help': func.help.get(arg, '')}))
